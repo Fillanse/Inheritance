@@ -37,13 +37,8 @@ public:
 		set_first_name(first_name);
 		set_age(age);
 		count++;
-		cout << "HConstructor:\t" << this << endl;
 	}
-	virtual ~Human()
-	{
-		count--;
-		cout << "HDestructor:\t" << this << endl;
-	}
+	virtual ~Human() { count--; }
 
 	virtual std::ostream& info(std::ostream& os)const
 	{
@@ -56,7 +51,6 @@ public:
 		return os;
 	}
 
-	// для записи в файл
 	virtual void save(std::ostream& os) const
 	{
 		os << "Human;" << last_name << ";" << first_name << ";" << age << "\n";
@@ -100,12 +94,8 @@ public:
 		set_group(group);
 		set_rating(rating);
 		set_attendance(attendance);
-		cout << "SConstructor:\t" << this << endl;
 	}
-	~Student()
-	{
-		cout << "SDestructor:\t" << this << endl;
-	}
+	~Student() {}
 
 	std::ostream& info(std::ostream& os)const override
 	{
@@ -149,12 +139,8 @@ public:
 	{
 		set_speciality(speciality);
 		set_experience(experience);
-		cout << "TConstructor:\t" << this << endl;
 	}
-	~Teacher()
-	{
-		cout << "TDestructor:\t" << this << endl;
-	}
+	~Teacher() {}
 
 	std::ostream& info(std::ostream& os)const override
 	{
@@ -181,12 +167,8 @@ public:
 		:Student(HUMAN_GIVE_PARAMETERS, STUDENT_GIVE_PARAMETERS)
 	{
 		this->subject = subject;
-		cout << "GConstructor:\t" << this << endl;
 	}
-	~Graduate()
-	{
-		cout << "GDestructor:\t" << this << endl;
-	}
+	~Graduate() {}
 
 	std::ostream& info(std::ostream& os)const override
 	{
@@ -205,10 +187,7 @@ public:
 void save_group(const std::vector<Human*>& group, const std::string& filename)
 {
 	std::ofstream fout(filename);
-	for (auto* person : group)
-	{
-		person->save(fout);
-	}
+	for (auto* person : group) person->save(fout);
 }
 
 std::vector<Human*> load_group(const std::string& filename)
@@ -280,7 +259,7 @@ int main()
 {
 	setlocale(LC_ALL, "");
 
-	std::vector<Human*> group =
+	std::vector<Human*> group_original =
 	{
 		new Human("Montana", "Antonio", 25),
 		new Student("Pinkman", "Jessie", 22, "Chemistry", "WW_220", 95, 99),
@@ -292,23 +271,47 @@ int main()
 		new Teacher("Schwartzneger", "Arnold", 85, "Heavy Metal", 60)
 	};
 
-	cout << "Исходная группа:\n";
-	for (auto* person : group)
-	{
+	cout << "Original group:\n";
+	for (auto* person : group_original)
 		cout << *person << endl << delimiter << endl;
+
+	save_group(group_original, "group.txt");
+
+	std::vector<Human*> group_loaded = load_group("group.txt");
+
+	cout << "\nLoaded group:\n";
+	for (auto* person : group_loaded)
+		cout << *person << endl << delimiter << endl;
+
+	cout << "\nVerification:\n";
+	bool all_ok = true;
+	if (group_original.size() == group_loaded.size())
+	{
+		for (size_t i = 0; i < group_original.size(); ++i)
+		{
+			std::ostringstream oss1, oss2;
+			group_original[i]->info(oss1);
+			group_loaded[i]->info(oss2);
+			if (oss1.str() == oss2.str())
+				cout << "Object " << i + 1 << ": OK\n";
+			else
+			{
+				cout << "Object " << i + 1 << ": FAIL\n";
+				all_ok = false;
+			}
+		}
+	}
+	else
+	{
+		cout << "Group sizes differ! FAIL\n";
+		all_ok = false;
 	}
 
-	save_group(group, "group.txt");
+	if (all_ok)
+		cout << "\nAll objects restored successfully\n";
+	else
+		cout << "\nData mismatch detected\n";
 
-	for (auto* person : group) delete person;
-	group.clear();
-
-	cout << "\nГруппа загружена из файла:\n";
-	group = load_group("group.txt");
-	for (auto* person : group)
-	{
-		cout << *person << endl << delimiter << endl;
-	}
-
-	for (auto* person : group) delete person;
+	for (auto* person : group_original) delete person;
+	for (auto* person : group_loaded) delete person;
 }
