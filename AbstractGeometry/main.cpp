@@ -274,12 +274,11 @@ namespace Geometry
 	};
 
 	class Circle : public Ellipse {
-		double radius;
 	public:
 		Circle(double radius, Color color) : Ellipse(radius, radius, color) {}
 		Circle(double radius, SHAPE_TAKE_PARAMETERS) : Ellipse(radius, radius, SHAPE_GIVE_PARAMETERS) {}
 		double get_perimeter() const override {
-			return get_pi() * 2 * radius;
+			return get_pi() * 2 * get_radiusX();
 		}
 		void info() const override {
 			Shape::info();
